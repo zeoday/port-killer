@@ -55,36 +55,43 @@ jobs:
         run: |
           APP_PATH=".build/release/PortKiller.app"
           FRAMEWORKS_PATH="$APP_PATH/Contents/Frameworks"
+          SPARKLE="$FRAMEWORKS_PATH/Sparkle.framework/Versions/B"
 
-          # Sign Sparkle framework first (inside out signing)
+          # Sign Sparkle framework components (inside out)
           if [ -d "$FRAMEWORKS_PATH/Sparkle.framework" ]; then
-            echo "Signing Sparkle framework..."
-            codesign --force --options runtime \
+            echo "Signing Sparkle framework components..."
+
+            # XPC Services
+            codesign --force --options runtime --timestamp \
               --sign "$DEVELOPER_ID_NAME" \
-              --timestamp \
-              "$FRAMEWORKS_PATH/Sparkle.framework/Versions/B/XPCServices/Installer.xpc"
-            codesign --force --options runtime \
+              "$SPARKLE/XPCServices/Downloader.xpc"
+            codesign --force --options runtime --timestamp \
               --sign "$DEVELOPER_ID_NAME" \
-              --timestamp \
-              "$FRAMEWORKS_PATH/Sparkle.framework/Versions/B/Autoupdate"
-            codesign --force --options runtime \
+              "$SPARKLE/XPCServices/Installer.xpc"
+
+            # Autoupdate binary
+            codesign --force --options runtime --timestamp \
               --sign "$DEVELOPER_ID_NAME" \
-              --timestamp \
-              "$FRAMEWORKS_PATH/Sparkle.framework/Versions/B/Updater.app"
-            codesign --force --options runtime \
+              "$SPARKLE/Autoupdate"
+
+            # Updater app
+            codesign --force --options runtime --timestamp \
               --sign "$DEVELOPER_ID_NAME" \
-              --timestamp \
+              "$SPARKLE/Updater.app"
+
+            # Main framework
+            codesign --force --options runtime --timestamp \
+              --sign "$DEVELOPER_ID_NAME" \
               "$FRAMEWORKS_PATH/Sparkle.framework"
           fi
 
           # Sign main app
-          codesign --force --options runtime \
+          codesign --force --options runtime --timestamp \
             --sign "$DEVELOPER_ID_NAME" \
-            --timestamp \
             "$APP_PATH"
 
-          # Verify signature
-          codesign --verify --verbose=4 "$APP_PATH"
+          # Verify signatures
+          codesign --verify --deep --strict --verbose=2 "$APP_PATH"
 
       - name: Notarize app
         env:
