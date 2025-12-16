@@ -34,11 +34,11 @@ if [ -d "$BUILD_DIR/PortKiller_PortKiller.bundle" ]; then
     cp -r "$BUILD_DIR/PortKiller_PortKiller.bundle" "$RESOURCES_DIR/"
 fi
 
-# Copy Sparkle framework
+# Copy Sparkle framework (use ditto to preserve symlinks)
 SPARKLE_FRAMEWORK=".build/arm64-apple-macosx/release/Sparkle.framework"
 if [ -d "$SPARKLE_FRAMEWORK" ]; then
     echo "📦 Copying Sparkle.framework..."
-    cp -R "$SPARKLE_FRAMEWORK" "$CONTENTS_DIR/Frameworks/"
+    ditto "$SPARKLE_FRAMEWORK" "$CONTENTS_DIR/Frameworks/Sparkle.framework"
 
     # Add rpath so executable can find the framework
     echo "🔗 Setting up framework path..."
