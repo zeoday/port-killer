@@ -11,6 +11,10 @@ A native macOS menu bar application for finding and killing processes running on
   <img src=".github/assets/screen.png" alt="PortKiller Screenshot" width="400">
 </p>
 
+<p align="center">
+  <img src=".github/assets/port-kill.gif" alt="PortKiller Demo" width="400">
+</p>
+
 ## Features
 
 - **Menu Bar Integration** - Lives in your menu bar, no Dock icon clutter
