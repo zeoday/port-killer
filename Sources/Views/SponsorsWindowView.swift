@@ -9,9 +9,17 @@ struct SponsorsPageView: View {
         GridItem(.adaptive(minimum: 80, maximum: 100), spacing: 16)
     ]
 
+    private var activeSponsors: [Sponsor] {
+        sponsorManager.sponsors.filter { $0.amount > 0 }
+    }
+
+    private var pastSponsors: [Sponsor] {
+        sponsorManager.sponsors.filter { $0.amount <= 0 }
+    }
+
     var body: some View {
         ScrollView {
-            VStack(spacing: 20) {
+            VStack(spacing: 24) {
                 // Header
                 HStack(spacing: 16) {
                     Image(systemName: "heart.fill")
@@ -47,16 +55,32 @@ struct SponsorsPageView: View {
                 .padding(.horizontal, 24)
                 .padding(.top, 20)
 
-                // Sponsors Grid
+                // Sponsors Content
                 if sponsorManager.sponsors.isEmpty && !sponsorManager.isLoading {
                     emptyState
                 } else {
-                    LazyVGrid(columns: columns, spacing: 16) {
-                        ForEach(sponsorManager.sponsors) { sponsor in
-                            SponsorCard(sponsor: sponsor)
+                    VStack(spacing: 24) {
+                        // Active Sponsors
+                        if !activeSponsors.isEmpty {
+                            sponsorSection(
+                                title: "Active Sponsors",
+                                icon: "star.fill",
+                                color: .yellow,
+                                sponsors: activeSponsors
+                            )
+                        }
+
+                        // Past Sponsors
+                        if !pastSponsors.isEmpty {
+                            sponsorSection(
+                                title: "Past Sponsors",
+                                icon: "heart.fill",
+                                color: .secondary,
+                                sponsors: pastSponsors,
+                                dimmed: true
+                            )
                         }
                     }
-                    .padding(.horizontal, 24)
                 }
 
             }
@@ -68,6 +92,28 @@ struct SponsorsPageView: View {
             if sponsorManager.sponsors.isEmpty {
                 await sponsorManager.refreshSponsors()
             }
+        }
+    }
+
+    private func sponsorSection(title: String, icon: String, color: Color, sponsors: [Sponsor], dimmed: Bool = false) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .foregroundStyle(color)
+                Text(title)
+                    .font(.headline)
+                Text("(\(sponsors.count))")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 24)
+
+            LazyVGrid(columns: columns, spacing: 16) {
+                ForEach(sponsors) { sponsor in
+                    SponsorCard(sponsor: sponsor, dimmed: dimmed)
+                }
+            }
+            .padding(.horizontal, 24)
         }
     }
 
@@ -113,6 +159,7 @@ struct SponsorsPageView: View {
 
 struct SponsorCard: View {
     let sponsor: Sponsor
+    var dimmed: Bool = false
     @State private var isHovered = false
 
     var body: some View {
@@ -140,12 +187,15 @@ struct SponsorCard: View {
                     .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
             )
             .scaleEffect(isHovered ? 1.08 : 1.0)
+            .opacity(dimmed ? 0.6 : 1.0)
+            .grayscale(dimmed ? 0.5 : 0)
 
             Text(sponsor.displayName)
                 .font(.caption)
                 .fontWeight(.medium)
                 .lineLimit(1)
                 .truncationMode(.tail)
+                .foregroundStyle(dimmed ? .secondary : .primary)
         }
         .frame(width: 80)
         .padding(10)
