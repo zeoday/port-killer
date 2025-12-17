@@ -1,7 +1,44 @@
 import SwiftUI
 
+@MainActor
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        // Start as accessory (menu bar only, no Dock icon)
+        NSApp.setActivationPolicy(.accessory)
+
+        // Monitor window visibility to toggle Dock icon
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(windowDidBecomeKey),
+            name: NSWindow.didBecomeKeyNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(windowWillClose),
+            name: NSWindow.willCloseNotification,
+            object: nil
+        )
+    }
+
+    @objc private func windowDidBecomeKey(_ notification: Notification) {
+        guard let window = notification.object as? NSWindow,
+              window.title == "PortKiller" else { return }
+        // Show in Dock when main window is open
+        NSApp.setActivationPolicy(.regular)
+    }
+
+    @objc private func windowWillClose(_ notification: Notification) {
+        guard let window = notification.object as? NSWindow,
+              window.title == "PortKiller" else { return }
+        // Hide from Dock when main window closes
+        NSApp.setActivationPolicy(.accessory)
+    }
+}
+
 @main
 struct PortKillerApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @State private var state = AppState()
     @State private var sponsorManager = SponsorManager()
     @Environment(\.openWindow) private var openWindow

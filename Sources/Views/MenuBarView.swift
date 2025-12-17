@@ -140,6 +140,16 @@ struct MenuBarView: View {
 
             // Menu Items
             VStack(spacing: 0) {
+                MenuItemButton(title: "Open PortKiller", icon: "macwindow", shortcut: "O") {
+                    openWindow(id: "main")
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        bringMainWindowToFront()
+                    }
+                }
+
+                Divider()
+                    .padding(.vertical, 4)
+
                 MenuItemButton(title: "Refresh", icon: "arrow.clockwise", shortcut: "R") {
                     Task { await state.refresh() }
                 }
@@ -182,13 +192,6 @@ struct MenuBarView: View {
 
                 Divider()
                     .padding(.vertical, 4)
-
-                MenuItemButton(title: "Open PortKiller", icon: "macwindow", shortcut: "O") {
-                    openWindow(id: "main")
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        bringMainWindowToFront()
-                    }
-                }
 
                 MenuItemButton(title: "Sponsors", icon: "heart.fill") {
                     state.selectedSidebarItem = .sponsors
